@@ -34,3 +34,19 @@ exports.selectArticlesWithCommentCount = () => {
             return dbOutput.rows
         })
 }
+
+exports.selectArticleComments = (articleId) => {
+    return db
+        .query(
+            "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
+            [articleId]
+        )
+        .then((dbOutput) => {
+            if (dbOutput.rows.length > 0) return dbOutput.rows
+            else
+                return Promise.reject({
+                    status: 404,
+                    msg: "No article found for specified id",
+                })
+        })
+}

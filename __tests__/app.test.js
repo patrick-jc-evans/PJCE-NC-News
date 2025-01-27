@@ -128,3 +128,54 @@ describe("GET /api/articles", () => {
             })
     })
 })
+
+describe("GET /api/articles/:article_id/comments", () => {
+    test("200: Responds with an array of comments for a given article id", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then((result) => {
+                commentsArray = result.body.comments
+                // Check exact value of first comment
+                expect(commentsArray[0]).toEqual({
+                    comment_id: 5,
+                    body: "I hate streaming noses",
+                    article_id: 1,
+                    author: "icellusedkars",
+                    votes: 0,
+                    created_at: "2020-11-03T21:00:00.000Z",
+                })
+
+                // Check order of comments is correct
+                for (let i = 0; i < commentsArray.length - 2; i++) {
+                    expect(
+                        commentsArray[i].created_at <
+                            commentsArray[i + 1].created_at
+                    )
+                }
+
+                // Check expected number of comments present
+                expect(commentsArray.length).toBe(11)
+            })
+    })
+
+    test("400: Responds with 400 for an an invalid id", () => {
+        return request(app)
+            .get("/api/articles/a/comments")
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid id")
+            })
+    })
+
+    test("404: Responds with 404 for an id out of range", () => {
+        return request(app)
+            .get("/api/articles/9999/comments")
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "No article found for specified id"
+                )
+            })
+    })
+})
