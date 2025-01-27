@@ -3,12 +3,14 @@ const {
     getApi,
     getTopics,
     getArticleFromId,
+    getArticles,
 } = require("./controllers/ncNews.controller")
 const app = express()
 
 app.get("/api", getApi)
 app.get("/api/topics", getTopics)
 app.get("/api/articles/:article_id", getArticleFromId)
+app.get("/api/articles", getArticles)
 
 app.use((err, req, res, next) => {
     if (err.status && err.msg) {
