@@ -1,12 +1,13 @@
 const express = require("express")
-const { getApi } = require("./controllers/ncNews.controller")
+const { getApi, getTopics } = require("./controllers/ncNews.controller")
 const app = express()
 const port = 9090
 
-app.use("/api", getApi)
+app.get("/api", getApi)
+app.get("/api/topics", getTopics)
 
-const server = app.listen(port, () => {
-    console.log(`app.js is listening on port ${port}`)
+app.use((err, req, res, next) => {
+    res.status(500).send({ msg: "Internal server error" })
 })
 
-module.exports = server
+module.exports = app
