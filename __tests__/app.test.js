@@ -5,9 +5,7 @@ const app = require("../app/app.js")
 
 /* Set up your beforeEach & afterAll functions here */
 
-afterAll(() => {
-    app.close()
-})
+afterAll(() => {})
 
 describe("GET /api", () => {
     test("200: Responds with an object detailing the documentation for each endpoint", () => {
