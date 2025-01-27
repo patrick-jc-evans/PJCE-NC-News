@@ -6,4 +6,8 @@ const port = 9090
 app.get("/api", getApi)
 app.get("/api/topics", getTopics)
 
+app.use((err, req, res, next) => {
+    res.status(500).send({ msg: "Internal server error" })
+})
+
 module.exports = app
