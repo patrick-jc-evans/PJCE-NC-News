@@ -1,10 +1,26 @@
 const express = require("express")
-const { getApi, getTopics } = require("./controllers/ncNews.controller")
+const {
+    getApi,
+    getTopics,
+    getArticleFromId,
+} = require("./controllers/ncNews.controller")
 const app = express()
-const port = 9090
 
 app.get("/api", getApi)
 app.get("/api/topics", getTopics)
+app.get("/api/articles/:article_id", getArticleFromId)
+
+app.use((err, req, res, next) => {
+    if (err.status && err.msg) {
+        res.status(err.status).send({ msg: err.msg })
+    } else next(err)
+})
+
+app.use((err, req, res, next) => {
+    if (err.code === "22P02") {
+        res.status(400).send({ msg: "Bad Request: Invalid id" })
+    }
+})
 
 app.use((err, req, res, next) => {
     res.status(500).send({ msg: "Internal server error" })
