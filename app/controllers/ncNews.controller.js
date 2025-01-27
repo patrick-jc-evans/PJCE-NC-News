@@ -4,6 +4,7 @@ const {
     selectTopics,
     selectArticleFromId,
     selectArticlesWithCommentCount,
+    selectArticleComments,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -30,6 +31,14 @@ exports.getArticles = (req, res, next) => {
     selectArticlesWithCommentCount()
         .then((articles) => {
             res.status(200).send({ articles })
+        })
+        .catch((err) => next(err))
+}
+
+exports.getCommentsFromArticle = (req, res, next) => {
+    selectArticleComments(req.params.article_id)
+        .then((comments) => {
+            res.status(200).send({ comments })
         })
         .catch((err) => next(err))
 }
