@@ -106,7 +106,6 @@ describe("GET /api/articles", () => {
                 )
 
                 // Check the articles are sorted by date.
-                console.log(articlesArray)
                 for (let i = 0; i < articlesArray.length - 2; i++) {
                     expect(
                         articlesArray[i].created_at <
