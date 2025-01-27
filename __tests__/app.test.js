@@ -5,6 +5,7 @@ const request = require("supertest")
 const app = require("../app/app.js")
 const seed = require("../db/seeds/seed.js")
 const testData = require("../db/data/test-data/index.js")
+const comments = require("../db/data/test-data/comments.js")
 
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => {
@@ -78,6 +79,52 @@ describe("GET /api/articles/article_id", () => {
                 expect(result.body.msg).toBe(
                     "No article found for specified id"
                 )
+            })
+    })
+})
+
+describe("GET /api/articles", () => {
+    test("200: Responds with an array of expected article objects", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the keys
+                articlesArray.forEach((article) =>
+                    expect(Object.keys(article)).toEqual([
+                        "author",
+                        "title",
+                        "article_id",
+                        "topic",
+                        "created_at",
+                        "votes",
+                        "article_img_url",
+                        "comment_count",
+                    ])
+                )
+
+                // Check the articles are sorted by date.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].created_at <
+                            articlesArray[i + 1].created_at
+                    )
+                }
+
+                // Check the first article has all expected data
+                expect(articlesArray[0]).toEqual({
+                    author: "icellusedkars",
+                    title: "Eight pug gifs that remind me of mitch",
+                    article_id: 3,
+                    topic: "mitch",
+                    created_at: "2020-11-03T09:12:00.000Z",
+                    votes: 0,
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                    comment_count: "2",
+                })
             })
     })
 })
