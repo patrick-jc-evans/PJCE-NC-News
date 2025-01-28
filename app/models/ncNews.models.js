@@ -1,4 +1,3 @@
-const e = require("express")
 const db = require("../../db/index.js")
 const format = require("pg-format")
 
@@ -27,6 +26,35 @@ checkArticleIdExists = (article_id) => {
             return Promise.reject({
                 status: 400,
                 msg: "Bad Request: Invalid article id",
+            })
+        })
+}
+
+checkCommentIdExists = (comment_id) => {
+    return db
+        .query("SELECT COUNT(*) FROM comments WHERE comment_id = $1", [
+            comment_id,
+        ])
+        .then((check) => {
+            if (Number(check.rows[0].count) > 0) {
+                // Returns to end the promise, output is not needed
+                return undefined
+            } else {
+                // Sends into .catch block
+                return Promise.reject({
+                    status: 404,
+                    msg: "No comment found for specified id",
+                })
+            }
+        })
+        .catch((err) => {
+            if (err.status === 404) {
+                return Promise.reject(err)
+            }
+
+            return Promise.reject({
+                status: 400,
+                msg: "Bad Request: Invalid comment id",
             })
         })
 }
@@ -130,5 +158,13 @@ exports.updateArticleVotes = (article_id, vote_change) => {
                         return dbOutput.rows[0]
                     })
             })
+    })
+}
+
+exports.removeComment = (commentId) => {
+    return checkCommentIdExists(commentId).then(() => {
+        return db.query("DELETE FROM comments WHERE comment_id = $1", [
+            commentId,
+        ])
     })
 }

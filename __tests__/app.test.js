@@ -346,3 +346,23 @@ describe("PATCH api/articles/:article_id", () => {
             })
     })
 })
+
+describe.only("DELETE api/comments/comment_id", () => {
+    test("204: Responds with 204 after deleting a comment with a given id.", () => {
+        return request(app)
+            .delete("/api/comments/1")
+            .expect(204)
+            .then(() => {
+                return db
+                    .query("SELECT * FROM comments WHERE comment_id = 1")
+                    .then((dbOutput) => expect(dbOutput.rows).toEqual([]))
+            })
+        //Check comment id 1 is definitely gone from the database:
+    })
+    test("400: Responds with 400 for an invalid id", () => {
+        return request(app).delete("/api/comments/a").expect(400)
+    })
+    test("404: Responds with 404 for an id that doesn't exist.", () => {
+        return request(app).delete("/api/comments/999").expect(404)
+    })
+})
