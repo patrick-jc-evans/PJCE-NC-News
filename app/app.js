@@ -7,6 +7,7 @@ const {
     getCommentsFromArticle,
     postCommentForArticle,
     pathVotesOnArticle,
+    deleteComment,
 } = require("./controllers/ncNews.controller")
 const app = express()
 
@@ -19,6 +20,7 @@ app.get("/api/articles", getArticles)
 app.get("/api/articles/:article_id/comments", getCommentsFromArticle)
 app.post("/api/articles/:article_id/comments", postCommentForArticle)
 app.patch("/api/articles/:article_id", pathVotesOnArticle)
+app.delete("/api/comments/:comment_id", deleteComment)
 
 app.use((err, req, res, next) => {
     if (err.status && err.msg) {
