@@ -385,3 +385,49 @@ describe("GET/api/users", () => {
             })
     })
 })
+
+describe.only("GET /api/articles  [Sorting Queries]", () => {
+    // CHECK - does number of comments = valid column? I think so?
+    test("200: Responds with an array of all articles, defaulting to created_at desc", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the articles are sorted by decending date by defauly.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].created_at <
+                            articlesArray[i + 1].created_at
+                    )
+                }
+            })
+    })
+
+    test("200: Responds with an array of all articles ordered by asc, defaulting to created_at", () => {
+        return request(app)
+            .get("/api/articles?order=asc")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the articles are sorted by decending date by defauly.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].created_at >
+                            articlesArray[i + 1].created_at
+                    )
+                }
+            })
+    })
+
+    test("400: Responds with a 400 if the order parameter is not allowed", () => {
+        return request(app)
+            .get("/api/articles?order=potato")
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid order query")
+            })
+    })
+})
