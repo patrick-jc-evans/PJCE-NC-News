@@ -8,6 +8,7 @@ const {
     insertComment,
     updateArticleVotes,
     removeComment,
+    selectUsers,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -74,6 +75,15 @@ exports.deleteComment = (req, res, next) => {
     removeComment(comment_id)
         .then(() => {
             res.sendStatus(204)
+        })
+        .catch((err) => next(err))
+}
+
+exports.getUsers = (req, res, next) => {
+    selectUsers()
+        .then((users) => {
+            console.log(users)
+            res.status(200).send({ users })
         })
         .catch((err) => next(err))
 }

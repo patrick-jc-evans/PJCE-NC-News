@@ -168,3 +168,9 @@ exports.removeComment = (commentId) => {
         ])
     })
 }
+
+exports.selectUsers = () => {
+    return db.query("SELECT * FROM users").then((dbOutput) => {
+        return dbOutput.rows
+    })
+}
