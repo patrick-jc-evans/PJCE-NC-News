@@ -1,3 +1,4 @@
+const e = require("express")
 const db = require("../../db/index.js")
 const format = require("pg-format")
 
@@ -53,6 +54,38 @@ exports.selectArticleComments = (articleId) => {
                     .then((dbOutput) => {
                         return dbOutput.rows
                     })
+            }
+        })
+}
+
+exports.insertComment = (postInfo) => {
+    const { username, body, article_id } = postInfo
+    const date = new Date()
+
+    if (username === undefined || body === undefined) {
+        return Promise.reject({
+            status: 400,
+            msg: "Bad Request: Comment missing required properties",
+        })
+    }
+
+    const insertStr = format(
+        "INSERT INTO comments (author, body, article_id, votes, created_at) VALUES %L RETURNING *",
+        [[username, body, article_id, 0, date]]
+    )
+
+    return db
+        .query("SELECT * FROM users WHERE username = $1", [username])
+        .then((user) => {
+            if (user.rows.length === 0) {
+                return Promise.reject({
+                    status: 400,
+                    msg: "Bad Request: User does not exist",
+                })
+            } else {
+                return db.query(insertStr).then((dbOutput) => {
+                    return dbOutput.rows
+                })
             }
         })
 }
