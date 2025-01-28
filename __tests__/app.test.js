@@ -67,7 +67,7 @@ describe("GET /api/articles/article_id", () => {
             .get("/api/articles/a")
             .expect(400)
             .then((result) => {
-                expect(result.body.msg).toBe("Bad Request: Invalid id")
+                expect(result.body.msg).toBe("Bad Request: Invalid article id")
             })
     })
 
@@ -173,7 +173,7 @@ describe("GET /api/articles/:article_id/comments", () => {
             .get("/api/articles/a/comments")
             .expect(400)
             .then((result) => {
-                expect(result.body.msg).toBe("Bad Request: Invalid id")
+                expect(result.body.msg).toBe("Bad Request: Invalid article id")
             })
     })
 
@@ -249,7 +249,7 @@ describe("POST api/articles/:article_id/comments", () => {
             .send({ username: "butter_bridge", body: "This is a comment" })
             .expect(400)
             .then((result) => {
-                expect(result.body.msg).toBe("Bad Request: Invalid id")
+                expect(result.body.msg).toBe("Bad Request: Invalid article id")
             })
     })
     test("404: Responds with a 404 for an article_id that doesn't exist", () => {
@@ -258,7 +258,91 @@ describe("POST api/articles/:article_id/comments", () => {
             .send({ username: "butter_bridge", body: "This is a comment" })
             .expect(404)
             .then((result) => {
-                expect(result.body.msg).toBe("Parameter out of range")
+                expect(result.body.msg).toBe(
+                    "No article found for specified id"
+                )
+            })
+    })
+})
+
+describe("PATCH api/articles/:article_id", () => {
+    test("202: Responds with the updated article (positive votes)", () => {
+        return request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: 10 })
+            .expect(202)
+            .then((result) => {
+                expect(result.body.article).toEqual({
+                    article_id: 1,
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                    created_at: "2020-07-09T20:11:00.000Z",
+                    title: "Living in the shadow of a great man",
+                    topic: "mitch",
+                    votes: 110,
+                })
+            })
+    })
+    test("202: Responds with the updated article (negative votes)", () => {
+        return request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: -5 })
+            .expect(202)
+            .then((result) => {
+                expect(result.body.article).toEqual({
+                    article_id: 1,
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                    created_at: "2020-07-09T20:11:00.000Z",
+                    title: "Living in the shadow of a great man",
+                    topic: "mitch",
+                    votes: 95,
+                })
+            })
+    })
+
+    test("400: Responds with a 400 for a body with no inc_votes property", () => {
+        return request(app)
+            .patch("/api/articles/1")
+            .send({ banana: "10" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid Body")
+            })
+    })
+
+    test("400: Responds with a 400 for an invalid inc_votes value", () => {
+        return request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: "abc" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid Body")
+            })
+    })
+
+    test("400: Responds with a 400 for an invalid article_id format", () => {
+        return request(app)
+            .patch("/api/articles/a")
+            .send({ inc_votes: 10 })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid article id")
+            })
+    })
+    test("404: Responds with a 404 for an article_id that doesn't exist", () => {
+        return request(app)
+            .patch("/api/articles/9999")
+            .send({ inc_votes: 10 })
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "No article found for specified id"
+                )
             })
     })
 })
