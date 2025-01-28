@@ -159,6 +159,15 @@ describe("GET /api/articles/:article_id/comments", () => {
             })
     })
 
+    test("200: Responds with 200 and an empty array of comments for an article with no comments", () => {
+        return request(app)
+            .get("/api/articles/2/comments")
+            .expect(200)
+            .then((result) => {
+                expect(result.body.comments).toEqual([])
+            })
+    })
+
     test("400: Responds with 400 for an an invalid id", () => {
         return request(app)
             .get("/api/articles/a/comments")

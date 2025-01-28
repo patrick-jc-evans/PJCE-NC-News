@@ -37,16 +37,22 @@ exports.selectArticlesWithCommentCount = () => {
 
 exports.selectArticleComments = (articleId) => {
     return db
-        .query(
-            "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
-            [articleId]
-        )
-        .then((dbOutput) => {
-            if (dbOutput.rows.length > 0) return dbOutput.rows
-            else
+        .query("SELECT * FROM articles WHERE article_id = $1", [articleId])
+        .then((articleExistsCheck) => {
+            if (articleExistsCheck.rows.length === 0) {
                 return Promise.reject({
                     status: 404,
                     msg: "No article found for specified id",
                 })
+            } else {
+                return db
+                    .query(
+                        "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
+                        [articleId]
+                    )
+                    .then((dbOutput) => {
+                        return dbOutput.rows
+                    })
+            }
         })
 }
