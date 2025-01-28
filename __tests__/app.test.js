@@ -179,3 +179,77 @@ describe("GET /api/articles/:article_id/comments", () => {
             })
     })
 })
+
+describe("POST api/articles/:article_id/comments", () => {
+    test("201: Responds with 201 when a comment is successfully added", () => {
+        return request(app)
+            .post("/api/articles/1/comments")
+            .send({ username: "butter_bridge", body: "This is a comment" })
+            .expect(201)
+            .then((result) => {
+                expect(result.body.comment[0]).toEqual({
+                    comment_id: 19,
+                    body: "This is a comment",
+                    article_id: 1,
+                    author: "butter_bridge",
+                    votes: 0,
+
+                    // Date will change each time the test is ran.
+                    created_at: result.body.comment[0].created_at,
+                })
+            })
+    })
+
+    test("400: Responds with a 400 when the username in a post request does not exist", () => {
+        return request(app)
+            .post("/api/articles/1/comments")
+            .send({ username: "kev", body: "This is a comment" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: User does not exist")
+            })
+    })
+
+    test("400: Responds with a 400 when request is missing a property (username)", () => {
+        return request(app)
+            .post("/api/articles/1/comments")
+            .send({ body: "This is a comment with no username (name)" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Comment missing required properties"
+                )
+            })
+    })
+
+    test("400: Responds with a 400 when request is missing a property (body)", () => {
+        return request(app)
+            .post("/api/articles/1/comments")
+            .send({ username: "butter_bridge" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Comment missing required properties"
+                )
+            })
+    })
+
+    test("400: Responds with a 400 for an invalid article_id format", () => {
+        return request(app)
+            .post("/api/articles/a/comments")
+            .send({ username: "butter_bridge", body: "This is a comment" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid id")
+            })
+    })
+    test("404: Responds with a 404 for an article_id that doesn't exist", () => {
+        return request(app)
+            .post("/api/articles/9999/comments")
+            .send({ username: "butter_bridge", body: "This is a comment" })
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe("Parameter out of range")
+            })
+    })
+})
