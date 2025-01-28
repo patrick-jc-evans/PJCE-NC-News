@@ -2,6 +2,35 @@ const e = require("express")
 const db = require("../../db/index.js")
 const format = require("pg-format")
 
+checkArticleIdExists = (article_id) => {
+    return db
+        .query("SELECT COUNT(*) FROM articles WHERE article_id = $1", [
+            article_id,
+        ])
+        .then((check) => {
+            if (Number(check.rows[0].count) > 0) {
+                // Returns to end the promise, output is not needed
+                return undefined
+            } else {
+                // Sends into .catch block
+                return Promise.reject({
+                    status: 404,
+                    msg: "No article found for specified id",
+                })
+            }
+        })
+        .catch((err) => {
+            if (err.status === 404) {
+                return Promise.reject(err)
+            }
+
+            return Promise.reject({
+                status: 400,
+                msg: "Bad Request: Invalid article id",
+            })
+        })
+}
+
 exports.selectTopics = () => {
     return db.query("SELECT * FROM topics").then((dbOutput) => {
         return dbOutput.rows
@@ -9,16 +38,13 @@ exports.selectTopics = () => {
 }
 
 exports.selectArticleFromId = (articleId) => {
-    return db
-        .query("SELECT * FROM articles WHERE article_id=$1", [articleId])
-        .then((dbOutput) => {
-            if (dbOutput.rows.length > 0) return dbOutput.rows
-            else
-                return Promise.reject({
-                    status: 404,
-                    msg: "No article found for specified id",
-                })
-        })
+    return checkArticleIdExists(articleId).then(() => {
+        return db
+            .query("SELECT * FROM articles WHERE article_id=$1", [articleId])
+            .then((dbOutput) => {
+                return dbOutput.rows
+            })
+    })
 }
 
 exports.selectArticlesWithCommentCount = () => {
@@ -37,15 +63,10 @@ exports.selectArticlesWithCommentCount = () => {
 }
 
 exports.selectArticleComments = (articleId) => {
-    return db
-        .query("SELECT * FROM articles WHERE article_id = $1", [articleId])
-        .then((articleExistsCheck) => {
-            if (articleExistsCheck.rows.length === 0) {
-                return Promise.reject({
-                    status: 404,
-                    msg: "No article found for specified id",
-                })
-            } else {
+    return checkArticleIdExists(articleId).then(() => {
+        return db
+            .query("SELECT * FROM articles WHERE article_id = $1", [articleId])
+            .then((articleExistsCheck) => {
                 return db
                     .query(
                         "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
@@ -54,8 +75,8 @@ exports.selectArticleComments = (articleId) => {
                     .then((dbOutput) => {
                         return dbOutput.rows
                     })
-            }
-        })
+            })
+    })
 }
 
 exports.insertComment = (postInfo) => {
@@ -74,18 +95,40 @@ exports.insertComment = (postInfo) => {
         [[username, body, article_id, 0, date]]
     )
 
-    return db
-        .query("SELECT * FROM users WHERE username = $1", [username])
-        .then((user) => {
-            if (user.rows.length === 0) {
-                return Promise.reject({
-                    status: 400,
-                    msg: "Bad Request: User does not exist",
-                })
-            } else {
-                return db.query(insertStr).then((dbOutput) => {
-                    return dbOutput.rows
-                })
-            }
-        })
+    return checkArticleIdExists(article_id).then(() => {
+        return db
+            .query("SELECT * FROM users WHERE username = $1", [username])
+            .then((user) => {
+                if (user.rows.length === 0) {
+                    return Promise.reject({
+                        status: 400,
+                        msg: "Bad Request: User does not exist",
+                    })
+                } else {
+                    return db.query(insertStr).then((dbOutput) => {
+                        return dbOutput.rows
+                    })
+                }
+            })
+    })
+}
+
+exports.updateArticleVotes = (article_id, vote_change) => {
+    return checkArticleIdExists(article_id).then(() => {
+        return db
+            .query("SELECT votes FROM articles WHERE article_id = $1", [
+                article_id,
+            ])
+            .then((dbOutput) => {
+                const newVotes = dbOutput.rows[0].votes + vote_change
+                return db
+                    .query(
+                        "UPDATE articles SET votes = $1 WHERE article_id = $2 RETURNING *",
+                        [newVotes, article_id]
+                    )
+                    .then((dbOutput) => {
+                        return dbOutput.rows[0]
+                    })
+            })
+    })
 }

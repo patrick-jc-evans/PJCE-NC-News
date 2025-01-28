@@ -6,6 +6,7 @@ const {
     selectArticlesWithCommentCount,
     selectArticleComments,
     insertComment,
+    updateArticleVotes,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -51,6 +52,17 @@ exports.postCommentForArticle = (req, res, next) => {
     insertComment({ article_id, username, body })
         .then((comment) => {
             res.status(201).send({ comment })
+        })
+        .catch((err) => next(err))
+}
+
+exports.pathVotesOnArticle = (req, res, next) => {
+    const article_id = req.params.article_id
+    const { inc_votes } = req.body
+
+    updateArticleVotes(article_id, inc_votes)
+        .then((article) => {
+            res.status(202).send({ article })
         })
         .catch((err) => next(err))
 }
