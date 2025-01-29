@@ -386,16 +386,15 @@ describe("GET/api/users", () => {
     })
 })
 
-describe.only("GET /api/articles [Sorting Queries]", () => {
-    // CHECK - does number of comments = valid column? I think so?
+describe("GET /api/articles [Sorting Queries]", () => {
     test("200: Responds with an array of all articles, defaulting to created_at desc", () => {
         return request(app)
             .get("/api/articles")
             .expect(200)
             .then((articles) => {
-                articlesArray = articles.body.articles
+                const articlesArray = articles.body.articles
 
-                // Check the articles are sorted by decending date by defauly.
+                // Check the articles are sorted by decending date by default.
                 for (let i = 0; i < articlesArray.length - 2; i++) {
                     expect(
                         articlesArray[i].created_at <
@@ -410,7 +409,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?order=asc")
             .expect(200)
             .then((articles) => {
-                articlesArray = articles.body.articles
+                const articlesArray = articles.body.articles
 
                 // Check the articles are sorted by decending date by defauly.
                 for (let i = 0; i < articlesArray.length - 2; i++) {
@@ -427,7 +426,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=comment_count")
             .expect(200)
             .then((articles) => {
-                articlesArray = articles.body.articles
+                const articlesArray = articles.body.articles
 
                 // Check the articles are sorted by decending date by defauly.
                 for (let i = 0; i < articlesArray.length - 2; i++) {
@@ -444,7 +443,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=author&order=asc")
             .expect(200)
             .then((articles) => {
-                authorArray = articles.body.articles.map(
+                const authorArray = articles.body.articles.map(
                     (article) => article.author
                 )
                 expect(authorArray).toEqual(authorArray.toSorted())
@@ -456,7 +455,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=author&order=desc")
             .expect(200)
             .then((articles) => {
-                authorArray = articles.body.articles.map(
+                const authorArray = articles.body.articles.map(
                     (article) => article.author
                 )
                 expect(authorArray).toEqual(authorArray.toSorted().reverse())
@@ -468,7 +467,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=title&order=asc")
             .expect(200)
             .then((articles) => {
-                titleArray = articles.body.articles.map(
+                const titleArray = articles.body.articles.map(
                     (article) => article.title
                 )
                 expect(titleArray).toEqual(titleArray.toSorted())
@@ -480,7 +479,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=title&order=desc")
             .expect(200)
             .then((articles) => {
-                titleArray = articles.body.articles.map(
+                const titleArray = articles.body.articles.map(
                     (article) => article.title
                 )
                 expect(titleArray).toEqual(titleArray.toSorted().reverse())
@@ -492,7 +491,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=votes&order=asc")
             .expect(200)
             .then((articles) => {
-                votesArray = articles.body.articles.map(
+                const votesArray = articles.body.articles.map(
                     (article) => article.votes
                 )
                 expect(votesArray).toEqual(votesArray.toSorted((a, b) => a - b))
@@ -504,7 +503,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=votes&order=desc")
             .expect(200)
             .then((articles) => {
-                votesArray = articles.body.articles.map(
+                const votesArray = articles.body.articles.map(
                     (article) => article.votes
                 )
                 expect(votesArray).toEqual(votesArray.toSorted((a, b) => b - a))
@@ -516,7 +515,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=comment_count&order=asc")
             .expect(200)
             .then((articles) => {
-                commentCountArray = articles.body.articles.map(
+                const commentCountArray = articles.body.articles.map(
                     (article) => article.comment_count
                 )
                 expect(commentCountArray).toEqual(
@@ -530,7 +529,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=comment_count&order=desc")
             .expect(200)
             .then((articles) => {
-                commentCountArray = articles.body.articles.map(
+                const commentCountArray = articles.body.articles.map(
                     (article) => article.comment_count
                 )
                 expect(commentCountArray).toEqual(
@@ -544,7 +543,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=topic&order=asc")
             .expect(200)
             .then((articles) => {
-                topicArray = articles.body.articles.map(
+                const topicArray = articles.body.articles.map(
                     (article) => article.topic
                 )
                 expect(topicArray).toEqual(topicArray.toSorted())
@@ -556,7 +555,7 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
             .get("/api/articles?sort_by=topic&order=desc")
             .expect(200)
             .then((articles) => {
-                topicArray = articles.body.articles.map(
+                const topicArray = articles.body.articles.map(
                     (article) => article.topic
                 )
                 expect(topicArray).toEqual(topicArray.toSorted().reverse())
@@ -585,5 +584,54 @@ describe.only("GET /api/articles [Sorting Queries]", () => {
 
     test("200: Ignores an invalid query", () => {
         return request(app).get("/api/articles?a=b").expect(200)
+    })
+})
+
+describe("GET /api/articles [Topic Query]", () => {
+    test("200: Responds with only articles with only the topic of the query", () => {
+        return request(app)
+            .get("/api/articles?topic=mitch")
+            .expect(200)
+            .then((articles) => {
+                const articleArray = articles.body.articles
+
+                expect(articleArray.length).toBe(12)
+
+                articleArray.forEach((article) => [
+                    expect(article.topic).toBe("mitch"),
+                ])
+            })
+    })
+
+    test("404: Responds with 404 for a topic that doens't exist", () => {
+        return request(app)
+            .get("/api/articles?topic=kev")
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "No topic found for specified topic_name"
+                )
+            })
+    })
+
+    test("200: Returns an array sorted by specified column in specific order for a specific topic", () => {
+        return request(app)
+            .get("/api/articles?topic=mitch&sort_by=comment_count&order=asc")
+            .expect(200)
+            .then((articles) => {
+                const articleArray = articles.body.articles
+
+                articleArray.forEach((article) => [
+                    expect(article.topic).toBe("mitch"),
+                ])
+
+                const commentCountArray = articles.body.articles.map(
+                    (article) => article.comment_count
+                )
+
+                expect(commentCountArray).toEqual(
+                    commentCountArray.toSorted((a, b) => a - b)
+                )
+            })
     })
 })

@@ -59,6 +59,33 @@ checkCommentIdExists = (comment_id) => {
         })
 }
 
+checkTopicExists = (topic_name) => {
+    return db
+        .query("SELECT COUNT(*) FROM topics WHERE slug = $1", [topic_name])
+        .then((check) => {
+            if (Number(check.rows[0].count) > 0 || topic_name === "any") {
+                // Returns to end the promise, output is not needed
+                return undefined
+            } else {
+                // Sends into .catch block
+                return Promise.reject({
+                    status: 404,
+                    msg: "No topic found for specified topic_name",
+                })
+            }
+        })
+        .catch((err) => {
+            if (err.status === 404) {
+                return Promise.reject(err)
+            }
+
+            return Promise.reject({
+                status: 400,
+                msg: "Bad Request: Invalid topic name",
+            })
+        })
+}
+
 exports.selectTopics = () => {
     return db.query("SELECT * FROM topics").then((dbOutput) => {
         return dbOutput.rows
@@ -75,8 +102,8 @@ exports.selectArticleFromId = (articleId) => {
     })
 }
 
-exports.selectArticlesWithCommentCount = (sort_by, order) => {
-    if (order !== "asc" && order !== "desc")
+exports.selectArticlesWithCommentCount = (args) => {
+    if (args.order !== "asc" && args.order !== "desc")
         return Promise.reject({
             status: 400,
             msg: "Bad Request: Invalid order query",
@@ -91,25 +118,45 @@ exports.selectArticlesWithCommentCount = (sort_by, order) => {
         "votes",
         "comment_count",
     ]
-    if (!validSorts.includes(sort_by))
+
+    if (!validSorts.includes(args.sort_by))
         return Promise.reject({
             status: 400,
             msg: "Bad Request: Invalid sort_by query",
         })
 
-    const queryStr = format(
-        `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
-            AS comment_count 
-            FROM comments 
-            RIGHT JOIN articles ON (comments.article_id = articles.article_id) 
-            GROUP BY articles.article_id
-            ORDER BY %s %s`,
-        sort_by,
-        order
-    )
+    return checkTopicExists(args.topic).then(() => {
+        let queryStr
 
-    return db.query(queryStr).then((dbOutput) => {
-        return dbOutput.rows
+        if (args.topic !== "any") {
+            queryStr = format(
+                `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
+                AS comment_count 
+                FROM comments 
+                RIGHT JOIN articles ON (comments.article_id = articles.article_id) 
+                WHERE articles.topic = '%s'
+                GROUP BY articles.article_id
+                ORDER BY %s %s`,
+                args.topic,
+                args.sort_by,
+                args.order
+            )
+        } else {
+            queryStr = format(
+                `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
+                AS comment_count 
+                FROM comments 
+                RIGHT JOIN articles ON (comments.article_id = articles.article_id) 
+                GROUP BY articles.article_id
+                ORDER BY %s %s`,
+                args.sort_by,
+                args.order
+            )
+        }
+
+        return db.query(queryStr).then((dbOutput) => {
+            return dbOutput.rows
+        })
     })
 }
 
@@ -117,7 +164,7 @@ exports.selectArticleComments = (articleId) => {
     return checkArticleIdExists(articleId).then(() => {
         return db
             .query("SELECT * FROM articles WHERE article_id = $1", [articleId])
-            .then((articleExistsCheck) => {
+            .then(() => {
                 return db
                     .query(
                         "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
