@@ -34,11 +34,13 @@ exports.getArticleFromId = (req, res, next) => {
 exports.getArticles = (req, res, next) => {
     let sort_by = "created_at"
     let order = "desc"
+    let topic = "any"
 
     if (req.query.sort_by) sort_by = req.query.sort_by
     if (req.query.order) order = req.query.order
+    if (req.query.topic) topic = req.query.topic
 
-    selectArticlesWithCommentCount(sort_by, order)
+    selectArticlesWithCommentCount({ sort_by, order, topic })
         .then((articles) => {
             res.status(200).send({ articles })
         })
