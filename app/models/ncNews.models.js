@@ -94,11 +94,19 @@ exports.selectTopics = () => {
 
 exports.selectArticleFromId = (articleId) => {
     return checkArticleIdExists(articleId).then(() => {
-        return db
-            .query("SELECT * FROM articles WHERE article_id=$1", [articleId])
-            .then((dbOutput) => {
-                return dbOutput.rows
-            })
+        const queryStr = format(
+            `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.body ,articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
+                AS comment_count
+                FROM comments 
+                RIGHT JOIN articles ON (comments.article_id = articles.article_id) 
+                WHERE articles.article_id = '%s'
+                GROUP BY articles.article_id`,
+            [articleId]
+        )
+
+        return db.query(queryStr).then((dbOutput) => {
+            return dbOutput.rows
+        })
     })
 }
 
@@ -144,7 +152,7 @@ exports.selectArticlesWithCommentCount = (args) => {
         } else {
             queryStr = format(
                 `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
-                AS comment_count 
+                AS comment_count
                 FROM comments 
                 RIGHT JOIN articles ON (comments.article_id = articles.article_id) 
                 GROUP BY articles.article_id
