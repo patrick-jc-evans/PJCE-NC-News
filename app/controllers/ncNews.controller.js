@@ -32,7 +32,13 @@ exports.getArticleFromId = (req, res, next) => {
 }
 
 exports.getArticles = (req, res, next) => {
-    selectArticlesWithCommentCount()
+    let sort_by = "created_at"
+    let order = "desc"
+
+    if (req.query.sort_by) sort_by = req.query.sort_by
+    if (req.query.order) order = req.query.order
+
+    selectArticlesWithCommentCount(sort_by, order)
         .then((articles) => {
             res.status(200).send({ articles })
         })
@@ -82,7 +88,6 @@ exports.deleteComment = (req, res, next) => {
 exports.getUsers = (req, res, next) => {
     selectUsers()
         .then((users) => {
-            console.log(users)
             res.status(200).send({ users })
         })
         .catch((err) => next(err))

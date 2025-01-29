@@ -385,3 +385,205 @@ describe("GET/api/users", () => {
             })
     })
 })
+
+describe.only("GET /api/articles [Sorting Queries]", () => {
+    // CHECK - does number of comments = valid column? I think so?
+    test("200: Responds with an array of all articles, defaulting to created_at desc", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the articles are sorted by decending date by defauly.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].created_at <
+                            articlesArray[i + 1].created_at
+                    )
+                }
+            })
+    })
+
+    test("200: Responds with an array of all articles ordered by asc, defaulting to created_at", () => {
+        return request(app)
+            .get("/api/articles?order=asc")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the articles are sorted by decending date by defauly.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].created_at >
+                            articlesArray[i + 1].created_at
+                    )
+                }
+            })
+    })
+
+    test("200: Responds with all articles sorted by number of comments", () => {
+        return request(app)
+            .get("/api/articles?sort_by=comment_count")
+            .expect(200)
+            .then((articles) => {
+                articlesArray = articles.body.articles
+
+                // Check the articles are sorted by decending date by defauly.
+                for (let i = 0; i < articlesArray.length - 2; i++) {
+                    expect(
+                        articlesArray[i].comment_count <
+                            articlesArray[i + 1].comment_count
+                    )
+                }
+            })
+    })
+
+    test("200: Responds with all articles sorted by author asc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=author&order=asc")
+            .expect(200)
+            .then((articles) => {
+                authorArray = articles.body.articles.map(
+                    (article) => article.author
+                )
+                expect(authorArray).toEqual(authorArray.toSorted())
+            })
+    })
+
+    test("200: Responds with all articles sorted by author desc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=author&order=desc")
+            .expect(200)
+            .then((articles) => {
+                authorArray = articles.body.articles.map(
+                    (article) => article.author
+                )
+                expect(authorArray).toEqual(authorArray.toSorted().reverse())
+            })
+    })
+
+    test("200: Responds with all articles sorted by title asc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=title&order=asc")
+            .expect(200)
+            .then((articles) => {
+                titleArray = articles.body.articles.map(
+                    (article) => article.title
+                )
+                expect(titleArray).toEqual(titleArray.toSorted())
+            })
+    })
+
+    test("200: Responds with all articles sorted by title desc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=title&order=desc")
+            .expect(200)
+            .then((articles) => {
+                titleArray = articles.body.articles.map(
+                    (article) => article.title
+                )
+                expect(titleArray).toEqual(titleArray.toSorted().reverse())
+            })
+    })
+
+    test("200: Responds with all articles sorted by votes asc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=votes&order=asc")
+            .expect(200)
+            .then((articles) => {
+                votesArray = articles.body.articles.map(
+                    (article) => article.votes
+                )
+                expect(votesArray).toEqual(votesArray.toSorted((a, b) => a - b))
+            })
+    })
+
+    test("200: Responds with all articles sorted by votes desc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=votes&order=desc")
+            .expect(200)
+            .then((articles) => {
+                votesArray = articles.body.articles.map(
+                    (article) => article.votes
+                )
+                expect(votesArray).toEqual(votesArray.toSorted((a, b) => b - a))
+            })
+    })
+
+    test("200: Responds with all articles sorted by number of comments asc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=comment_count&order=asc")
+            .expect(200)
+            .then((articles) => {
+                commentCountArray = articles.body.articles.map(
+                    (article) => article.comment_count
+                )
+                expect(commentCountArray).toEqual(
+                    commentCountArray.toSorted((a, b) => a - b)
+                )
+            })
+    })
+
+    test("200: Responds with all articles sorted by number of comments desc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=comment_count&order=desc")
+            .expect(200)
+            .then((articles) => {
+                commentCountArray = articles.body.articles.map(
+                    (article) => article.comment_count
+                )
+                expect(commentCountArray).toEqual(
+                    commentCountArray.toSorted((a, b) => b - a)
+                )
+            })
+    })
+
+    test("200: Responds with all articles sorted by topics asc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=topic&order=asc")
+            .expect(200)
+            .then((articles) => {
+                topicArray = articles.body.articles.map(
+                    (article) => article.topic
+                )
+                expect(topicArray).toEqual(topicArray.toSorted())
+            })
+    })
+
+    test("200: Responds with all articles sorted by topics desc", () => {
+        return request(app)
+            .get("/api/articles?sort_by=topic&order=desc")
+            .expect(200)
+            .then((articles) => {
+                topicArray = articles.body.articles.map(
+                    (article) => article.topic
+                )
+                expect(topicArray).toEqual(topicArray.toSorted().reverse())
+            })
+    })
+
+    test("400: Responds with a 400 if the order parameter is not allowed", () => {
+        return request(app)
+            .get("/api/articles?order=potato")
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid order query")
+            })
+    })
+
+    test("400: Responds with a 400 if the sort_by parameter is not a valid column in the database", () => {
+        return request(app)
+            .get("/api/articles?sort_by=potato")
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Invalid sort_by query"
+                )
+            })
+    })
+
+    test("200: Ignores an invalid query", () => {
+        return request(app).get("/api/articles?a=b").expect(200)
+    })
+})
