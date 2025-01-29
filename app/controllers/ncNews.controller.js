@@ -32,12 +32,8 @@ exports.getArticleFromId = (req, res, next) => {
 }
 
 exports.getArticles = (req, res, next) => {
-    console.log(req.query)
-
     let sort_by = "created_at"
     let order = "desc"
-
-    console.log("IN CONTROLLER")
 
     if (req.query.sort_by) sort_by = req.query.sort_by
     if (req.query.order) order = req.query.order

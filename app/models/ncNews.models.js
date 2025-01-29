@@ -82,6 +82,21 @@ exports.selectArticlesWithCommentCount = (sort_by, order) => {
             msg: "Bad Request: Invalid order query",
         })
 
+    const validSorts = [
+        "author",
+        "title",
+        "article_id",
+        "topic",
+        "created_at",
+        "votes",
+        "comment_count",
+    ]
+    if (!validSorts.includes(sort_by))
+        return Promise.reject({
+            status: 400,
+            msg: "Bad Request: Invalid sort_by query",
+        })
+
     const queryStr = format(
         `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)
             AS comment_count 
@@ -92,8 +107,6 @@ exports.selectArticlesWithCommentCount = (sort_by, order) => {
         sort_by,
         order
     )
-
-    console.log(queryStr)
 
     return db.query(queryStr).then((dbOutput) => {
         return dbOutput.rows
