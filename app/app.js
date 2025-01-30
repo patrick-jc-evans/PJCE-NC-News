@@ -12,17 +12,11 @@ const {
 } = require("./controllers/ncNews.controller")
 const app = express()
 
+const apiRouter = require("./routes/apiRouter")
+
 app.use(express.json())
 
-app.get("/api", getApi)
-app.get("/api/topics", getTopics)
-app.get("/api/articles/:article_id", getArticleFromId)
-app.get("/api/articles", getArticles)
-app.get("/api/articles/:article_id/comments", getCommentsFromArticle)
-app.post("/api/articles/:article_id/comments", postCommentForArticle)
-app.patch("/api/articles/:article_id", pathVotesOnArticle)
-app.delete("/api/comments/:comment_id", deleteComment)
-app.get("/api/users", getUsers)
+app.use("/api", apiRouter)
 
 app.use((err, req, res, next) => {
     if (err.status && err.msg) {
