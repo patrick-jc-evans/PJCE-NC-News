@@ -1,4 +1,4 @@
-const db = require("../../db/index.js")
+const db = require("../../db/connection.js")
 const format = require("pg-format")
 
 checkArticleIdExists = (article_id) => {
