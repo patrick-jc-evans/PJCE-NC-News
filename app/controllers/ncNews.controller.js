@@ -66,7 +66,7 @@ exports.postCommentForArticle = (req, res, next) => {
         .catch((err) => next(err))
 }
 
-exports.pathVotesOnArticle = (req, res, next) => {
+exports.patchVotesOnArticle = (req, res, next) => {
     const article_id = req.params.article_id
     const { inc_votes } = req.body
 
