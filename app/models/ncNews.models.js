@@ -294,3 +294,20 @@ exports.selectUserFromUsername = (username) => {
             })
     })
 }
+
+exports.updateCommentVotes = (commentId, vote_change) => {
+    if (vote_change === undefined) {
+        return Promise.reject({ code: "22P02" })
+    }
+
+    return checkCommentIdExists(commentId).then(() => {
+        return db
+            .query(
+                "UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *",
+                [vote_change, commentId]
+            )
+            .then((dbOutput) => {
+                return dbOutput.rows[0]
+            })
+    })
+}
