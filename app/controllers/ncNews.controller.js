@@ -13,6 +13,7 @@ const {
     selectUserFromUsername,
     updateCommentVotes,
     insertArticle,
+    insertTopic,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -121,6 +122,16 @@ exports.postArticle = (req, res, next) => {
     insertArticle(req.body)
         .then((article) => {
             res.status(201).send({ article })
+        })
+        .catch((err) => {
+            next(err)
+        })
+}
+
+exports.postTopic = (req, res, next) => {
+    insertTopic(req.body.slug, req.body.description)
+        .then((topic) => {
+            res.status(201).send({ topic: topic[0] })
         })
         .catch((err) => {
             next(err)

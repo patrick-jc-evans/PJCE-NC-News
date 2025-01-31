@@ -358,3 +358,31 @@ exports.insertArticle = (postBody) => {
             }
         })
 }
+
+exports.insertTopic = (slug, description) => {
+    if (!slug || !description) {
+        return Promise.reject({
+            status: 400,
+            msg: "Property missing from body",
+        })
+    }
+
+    return db
+        .query("SELECT * FROM topics WHERE slug = $1", [slug])
+        .then((topic) => {
+            if (topic.rows.length === 0) {
+                const insertStr = format(
+                    "INSERT INTO topics (slug, description) VALUES %L RETURNING *",
+                    [[slug, description]]
+                )
+                return db.query(insertStr).then((newTopic) => {
+                    return newTopic.rows
+                })
+            } else {
+                return Promise.reject({
+                    status: 400,
+                    msg: "Bad Request: A topic with that slug already exists",
+                })
+            }
+        })
+}
