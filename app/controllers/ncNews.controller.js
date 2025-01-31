@@ -11,6 +11,7 @@ const {
     removeComment,
     selectUsers,
     selectUserFromUsername,
+    updateCommentVotes,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -103,6 +104,14 @@ exports.getUserByUsername = (req, res, next) => {
     selectUserFromUsername(username)
         .then((user) => {
             res.status(200).send({ user: user[0] })
+        })
+        .catch((err) => next(err))
+}
+
+exports.patchCommentVotes = (req, res, next) => {
+    updateCommentVotes(req.params.comment_id, req.body.inc_votes)
+        .then((comment) => {
+            res.status(202).send({ comment })
         })
         .catch((err) => next(err))
 }

@@ -684,3 +684,72 @@ describe("GET /api/users/:username", () => {
             })
     })
 })
+
+describe.only("PATCH /api/comments/:comment_id", () => {
+    test("200: Responds with the updated comment (positive)", () => {
+        return request(app)
+            .patch("/api/comments/1")
+            .send({ inc_votes: 1 })
+            .expect(202)
+            .then((comment) => {
+                console.log(comment.body)
+                expect(comment.body.comment).toEqual({
+                    comment_id: 1,
+                    body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                    article_id: 9,
+                    author: "butter_bridge",
+                    votes: 17,
+                    created_at: "2020-04-06T12:17:00.000Z",
+                })
+            })
+    })
+    test("200: Responds with the updated comment (negative)", () => {
+        return request(app)
+            .patch("/api/comments/1")
+            .send({ inc_votes: -4 })
+            .expect(202)
+            .then((comment) => {
+                console.log(comment.body)
+                expect(comment.body.comment).toEqual({
+                    comment_id: 1,
+                    body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+                    article_id: 9,
+                    author: "butter_bridge",
+                    votes: 12,
+                    created_at: "2020-04-06T12:17:00.000Z",
+                })
+            })
+    })
+    test("400: Responds with a 400 for a body with no inc_votes property", () => {
+        return request(app)
+            .patch("/api/comments/1")
+            .send({ banana: "10" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid Body")
+            })
+    })
+
+    test("400: Responds with a 400 for an invalid inc_votes value", () => {
+        return request(app)
+            .patch("/api/comments/1")
+            .send({ inc_votes: "abc" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Bad Request: Invalid Body")
+            })
+    })
+
+    test("404: Responds with a 404 for an comment_id that doesn't exist", () => {
+        return request(app)
+            .patch("/api/comments/9999")
+            .send({ inc_votes: 10 })
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "No comment found for specified id"
+                )
+            })
+    })
+})
+// Add breaking tests here - should all run fine.
