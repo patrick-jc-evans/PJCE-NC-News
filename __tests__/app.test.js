@@ -911,3 +911,37 @@ describe("DELETE /api/article/:article_id", () => {
         return request(app).delete("/api/articles/9999").expect(404)
     })
 })
+
+describe("GET /api/articles [PAGINATION]", () => {
+    test("200: Returns the correct number of articles for a given limit", () => {
+        return request(app)
+            .get("/api/articles?p=1&limit=5")
+            .expect(200)
+            .then((articles) => expect(articles.body.articles.length).toBe(5))
+    })
+    test("200: Returns the correct number of articles for a given page", () => {
+        return request(app)
+            .get("/api/articles?p=2&limit=5&sort_by=article_id&order=asc")
+            .expect(200)
+            .then((articles) => {
+                expect(articles.body.articles.length).toBe(5)
+                expect(articles.body.articles[0].article_id).toBe(6)
+            })
+    })
+    test("400: Returns 400 for p=invalid input", () => {
+        return request(app)
+            .get("/api/articles?p=a&limit=5")
+            .expect(400)
+            .then((result) =>
+                expect(result.body.msg).toBe("Invalid query for pages")
+            )
+    })
+    test("400: Returns 400 for limit=invalid input", () => {
+        return request(app)
+            .get("/api/articles?p=1&limit=a")
+            .expect(400)
+            .then((result) =>
+                expect(result.body.msg).toBe("Invalid query for limit")
+            )
+    })
+})
