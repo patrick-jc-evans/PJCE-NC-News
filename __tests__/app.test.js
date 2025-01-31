@@ -655,3 +655,32 @@ describe("GET /api/articles/:article_id [comment_count]", () => {
             })
     })
 })
+
+// ADVANCED TASKS
+
+describe("GET /api/users/:username", () => {
+    test("200: returns a single user with the properties username, avatar_url & name", () => {
+        return request(app)
+            .get("/api/users/butter_bridge")
+            .expect(200)
+            .then((user) => {
+                console.log(user.body)
+                expect(user.body.user).toEqual({
+                    avatar_url:
+                        "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+                    name: "jonny",
+                    username: "butter_bridge",
+                })
+            })
+    })
+    test("404: Responds with 404 for an id out of range", () => {
+        return request(app)
+            .get("/api/users/kev")
+            .expect(404)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "No user found for specified username"
+                )
+            })
+    })
+})
