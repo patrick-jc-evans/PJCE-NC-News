@@ -856,3 +856,46 @@ describe("POST /api/articles", () => {
     })
     // Self imposed extention - add regex check to the url string.
 })
+
+describe("POST /api/topics", () => {
+    test("201: successfully adds a topic and returns the newly created topic.", () => {
+        return request(app)
+            .post("/api/topics")
+            .send({ slug: "Patrick", description: "A red haired coder" })
+            .expect(201)
+            .then((newTopic) => {
+                expect(newTopic.body.topic).toEqual({
+                    slug: "Patrick",
+                    description: "A red haired coder",
+                })
+            })
+    })
+    test("400: returns a Bad Request error message if the slug is missing", () => {
+        request(app)
+            .post("/api/topics")
+            .send({ slug: "Patrick" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Property missing from body")
+            })
+    })
+    test("400: returns a Bad Request error message if the description is missing", () => {
+        request(app)
+            .post("/api/topics")
+            .send({ description: "A red haired coder" })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe("Property missing from body")
+            })
+    })
+    test("400: Returns a Bad Request if the topic already exists", () => {
+        return request(app)
+            .post("/api/topics")
+            .send({ slug: "mitch", description: "what a guy." })
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: A topic with that slug already exists"
+                )
+            })
+    })
+})
