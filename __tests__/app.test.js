@@ -946,7 +946,7 @@ describe("GET /api/articles [PAGINATION]", () => {
     })
 })
 
-describe.only("GET /api/comments [PAGINATION]", () => {
+describe("GET /api/comments [PAGINATION]", () => {
     test("200: Returns the correct number of comments for a given limit", () => {
         return request(app)
             .get("/api/articles/1/comments?p=1&limit=5")
