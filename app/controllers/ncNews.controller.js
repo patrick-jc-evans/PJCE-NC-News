@@ -14,6 +14,7 @@ const {
     updateCommentVotes,
     insertArticle,
     insertTopic,
+    removeArticle,
 } = require("../models/ncNews.models")
 
 exports.getApi = (req, res, next) => {
@@ -136,4 +137,10 @@ exports.postTopic = (req, res, next) => {
         .catch((err) => {
             next(err)
         })
+}
+
+exports.deleteArticle = (req, res, next) => {
+    removeArticle(req.params.article_id)
+        .then(() => res.sendStatus(204))
+        .catch((err) => next(err))
 }

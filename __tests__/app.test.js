@@ -899,3 +899,15 @@ describe("POST /api/topics", () => {
             })
     })
 })
+
+describe.only("DELETE /api/article/:article_id", () => {
+    test("204: Deletes the article and all comments on the article", () => {
+        return request(app).delete("/api/articles/1").expect(204)
+    })
+    test("400: Responds with a 400 for an invalid article_id format", () => {
+        return request(app).delete("/api/articles/a").expect(400)
+    })
+    test("404: Responds with a 404 for an article_id that doesn't exist", () => {
+        return request(app).delete("/api/articles/9999").expect(404)
+    })
+})

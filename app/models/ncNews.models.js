@@ -386,3 +386,15 @@ exports.insertTopic = (slug, description) => {
             }
         })
 }
+
+exports.removeArticle = (articleId) => {
+    return checkArticleIdExists(articleId).then(() => {
+        return db
+            .query("DELETE FROM comments WHERE article_id = $1", [articleId])
+            .then(() => {
+                return db.query("DELETE FROM articles WHERE article_id = $1", [
+                    articleId,
+                ])
+            })
+    })
+}
