@@ -664,7 +664,6 @@ describe("GET /api/users/:username", () => {
             .get("/api/users/butter_bridge")
             .expect(200)
             .then((user) => {
-                console.log(user.body)
                 expect(user.body.user).toEqual({
                     avatar_url:
                         "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
@@ -692,7 +691,6 @@ describe("PATCH /api/comments/:comment_id", () => {
             .send({ inc_votes: 1 })
             .expect(202)
             .then((comment) => {
-                console.log(comment.body)
                 expect(comment.body.comment).toEqual({
                     comment_id: 1,
                     body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
@@ -709,7 +707,6 @@ describe("PATCH /api/comments/:comment_id", () => {
             .send({ inc_votes: -4 })
             .expect(202)
             .then((comment) => {
-                console.log(comment.body)
                 expect(comment.body.comment).toEqual({
                     comment_id: 1,
                     body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
@@ -752,4 +749,110 @@ describe("PATCH /api/comments/:comment_id", () => {
             })
     })
 })
-// Add breaking tests here - should all run fine.
+
+describe("POST /api/articles", () => {
+    test("201: Responds with the newly added article (default url)", () => {
+        return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "A brief history of Mitch",
+                body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                topic: "mitch",
+            })
+            .expect(201)
+            .then((newArticle) => {
+                const articleWithoutDate = newArticle.body.article
+                delete articleWithoutDate.created_at
+
+                expect(articleWithoutDate).toEqual({
+                    article_id: 14,
+                    title: "A brief history of Mitch",
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                    votes: 0,
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                })
+            })
+    })
+    test("201: Responds with the newly added article (specified url)", () => {
+        return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "A brief history of Mitch",
+                body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                topic: "mitch",
+                article_img_url:
+                    "https://en.wikipedia.org/wiki/Monolith_%28Space_Odyssey%29#/media/File:ENS_2001_Monolith_below.jpg",
+            })
+            .expect(201)
+            .then((newArticle) => {
+                const articleWithoutDate = newArticle.body.article
+                delete articleWithoutDate.created_at
+
+                expect(articleWithoutDate).toEqual({
+                    article_id: 14,
+                    title: "A brief history of Mitch",
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                    votes: 0,
+                    article_img_url:
+                        "https://en.wikipedia.org/wiki/Monolith_%28Space_Odyssey%29#/media/File:ENS_2001_Monolith_below.jpg",
+                })
+            })
+    })
+    test("400: returns a 400 if topic does not exist", () => {
+        return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "A brief history of Mitch",
+                body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                topic: "kev",
+            })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Topic does not exist in database"
+                )
+            })
+    })
+
+    test("400: returns a 400 if author does not exist", () => {
+        return request(app)
+            .post("/api/articles")
+            .send({
+                author: "kev",
+                title: "A brief history of Mitch",
+                body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                topic: "mitch",
+            })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Author does not exist in database"
+                )
+            })
+    })
+
+    test("400: returns a 400 if a property is missing", () => {
+        return request(app)
+            .post("/api/articles")
+            .send({
+                title: "A brief history of Mitch",
+                body: "From the dawn of history, we have always wondered one thing: What is the meaning of Mitch?.",
+                topic: "mitch",
+            })
+            .expect(400)
+            .then((result) => {
+                expect(result.body.msg).toBe(
+                    "Bad Request: Article missing required properties"
+                )
+            })
+    })
+    // Self imposed extention - add regex check to the url string.
+})
