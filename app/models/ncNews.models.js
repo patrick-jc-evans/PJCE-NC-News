@@ -1,3 +1,4 @@
+const { promises } = require("supertest/lib/test.js")
 const db = require("../../db/connection.js")
 const format = require("pg-format")
 
@@ -87,18 +88,13 @@ checkTopicExists = (topic_name) => {
 }
 
 checkUserExists = (username) => {
-    console.log(username)
-
     return db
         .query("SELECT COUNT(*) FROM users WHERE username = $1", [username])
         .then((check) => {
-            console.log(check.rows)
-
             if (Number(check.rows[0].count) > 0) {
                 // Returns to end the promise, output is not needed
                 return undefined
             } else {
-                console.log("In the catch block!")
                 // Sends into .catch block
                 return Promise.reject({
                     status: 404,
@@ -310,4 +306,55 @@ exports.updateCommentVotes = (commentId, vote_change) => {
                 return dbOutput.rows[0]
             })
     })
+}
+
+exports.insertArticle = (postBody) => {
+    if (!postBody.article_img_url) {
+        postBody.article_img_url =
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    }
+
+    const requiredKeys = ["author", "title", "body", "topic", "article_img_url"]
+    for (let key of requiredKeys) {
+        if (!postBody[key]) {
+            return Promise.reject({
+                status: 400,
+                msg: "Bad Request: Article missing required properties",
+            })
+        }
+    }
+
+    const { author, title, body, topic, article_img_url } = postBody
+    const created_at = new Date()
+
+    const insertStr = format(
+        "INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *",
+        [[title, topic, author, body, created_at, 0, article_img_url]]
+    )
+
+    return db
+        .query("SELECT * FROM users WHERE username = $1", [author])
+        .then((user) => {
+            if (user.rows.length === 0) {
+                return Promise.reject({
+                    status: 400,
+                    msg: "Bad Request: Author does not exist in database",
+                })
+            } else {
+                return db
+                    .query("SELECT * FROM topics WHERE slug = $1", [topic])
+                    .then((topic) => {
+                        if (topic.rows.length === 0) {
+                            return Promise.reject({
+                                status: 400,
+                                msg: "Bad Request: Topic does not exist in database",
+                            })
+                        } else {
+                            return db.query(insertStr).then((newArticle) => {
+                                return newArticle.rows[0]
+                            })
+                        }
+                    })
+            }
+        })
 }
