@@ -46,7 +46,13 @@ exports.getArticles = (req, res, next) => {
     if (req.query.order) order = req.query.order
     if (req.query.topic) topic = req.query.topic
 
-    selectArticlesWithCommentCount({ sort_by, order, topic })
+    selectArticlesWithCommentCount({
+        sort_by,
+        order,
+        topic,
+        limit: req.query.limit,
+        p: req.query.p,
+    })
         .then((articles) => {
             res.status(200).send({ articles })
         })

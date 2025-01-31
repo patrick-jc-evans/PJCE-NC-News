@@ -190,6 +190,23 @@ exports.selectArticlesWithCommentCount = (args) => {
             )
         }
 
+        if (!isNaN(Number(args.limit))) {
+            queryStr += ` LIMIT ${args.limit}`
+            if (!isNaN(Number(args.p))) {
+                queryStr += ` OFFSET ${(args.p - 1) * args.limit}`
+            } else if (args.p !== undefined) {
+                return Promise.reject({
+                    status: 400,
+                    msg: "Invalid query for pages",
+                })
+            }
+        } else if (args.limit !== undefined) {
+            return Promise.reject({
+                status: 400,
+                msg: "Invalid query for limit",
+            })
+        }
+
         return db.query(queryStr).then((dbOutput) => {
             return dbOutput.rows
         })
