@@ -213,14 +213,35 @@ exports.selectArticlesWithCommentCount = (args) => {
     })
 }
 
-exports.selectArticleComments = (articleId) => {
+exports.selectArticleComments = (articleId, queries) => {
+    let queryExtention = ""
+
+    if (!isNaN(Number(queries.limit))) {
+        queryExtention += ` LIMIT ${queries.limit}`
+        if (!isNaN(Number(queries.p))) {
+            queryExtention += ` OFFSET ${(queries.p - 1) * queries.limit}`
+        } else if (queries.p !== undefined) {
+            return Promise.reject({
+                status: 400,
+                msg: "Invalid query for pages",
+            })
+        }
+    } else if (queries.limit !== undefined) {
+        return Promise.reject({
+            status: 400,
+            msg: "Invalid query for limit",
+        })
+    }
+
     return checkArticleIdExists(articleId).then(() => {
         return db
             .query("SELECT * FROM articles WHERE article_id = $1", [articleId])
             .then(() => {
                 return db
                     .query(
-                        "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc",
+                        "SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at desc" +
+                            queryExtention +
+                            ";",
                         [articleId]
                     )
                     .then((dbOutput) => {
