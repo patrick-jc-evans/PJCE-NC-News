@@ -86,6 +86,38 @@ checkTopicExists = (topic_name) => {
         })
 }
 
+checkUserExists = (username) => {
+    console.log(username)
+
+    return db
+        .query("SELECT COUNT(*) FROM users WHERE username = $1", [username])
+        .then((check) => {
+            console.log(check.rows)
+
+            if (Number(check.rows[0].count) > 0) {
+                // Returns to end the promise, output is not needed
+                return undefined
+            } else {
+                console.log("In the catch block!")
+                // Sends into .catch block
+                return Promise.reject({
+                    status: 404,
+                    msg: "No user found for specified username",
+                })
+            }
+        })
+        .catch((err) => {
+            if (err.status === 404) {
+                return Promise.reject(err)
+            }
+
+            return Promise.reject({
+                status: 400,
+                msg: "Bad Request: Invalid username name",
+            })
+        })
+}
+
 exports.selectTopics = () => {
     return db.query("SELECT * FROM topics").then((dbOutput) => {
         return dbOutput.rows
@@ -250,5 +282,15 @@ exports.removeComment = (commentId) => {
 exports.selectUsers = () => {
     return db.query("SELECT * FROM users").then((dbOutput) => {
         return dbOutput.rows
+    })
+}
+
+exports.selectUserFromUsername = (username) => {
+    return checkUserExists(username).then(() => {
+        return db
+            .query("SELECT * FROM users WHERE username = $1", [username])
+            .then((dbOutput) => {
+                return dbOutput.rows
+            })
     })
 }
