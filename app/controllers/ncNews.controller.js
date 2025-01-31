@@ -60,7 +60,7 @@ exports.getArticles = (req, res, next) => {
 }
 
 exports.getCommentsFromArticle = (req, res, next) => {
-    selectArticleComments(req.params.article_id)
+    selectArticleComments(req.params.article_id, req.query)
         .then((comments) => {
             res.status(200).send({ comments })
         })

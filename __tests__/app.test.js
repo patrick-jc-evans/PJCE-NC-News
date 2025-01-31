@@ -945,3 +945,39 @@ describe("GET /api/articles [PAGINATION]", () => {
             )
     })
 })
+
+describe("GET /api/comments [PAGINATION]", () => {
+    test("200: Returns the correct number of comments for a given limit", () => {
+        return request(app)
+            .get("/api/articles/1/comments?p=1&limit=5")
+            .expect(200)
+            .then((comments) => expect(comments.body.comments.length).toBe(5))
+    })
+    test("200: Returns the correct number of comments for a given page", () => {
+        return request(app)
+            .get(
+                "/api/articles/1/comments?p=2&limit=5&sort_by=comment_id&order=asc"
+            )
+            .expect(200)
+            .then((comments) => {
+                expect(comments.body.comments.length).toBe(5)
+                expect(comments.body.comments[0].article_id).toBe(1)
+            })
+    })
+    test("400: Returns 400 for p=invalid input", () => {
+        return request(app)
+            .get("/api/articles/1/comments?p=a&limit=5")
+            .expect(400)
+            .then((result) =>
+                expect(result.body.msg).toBe("Invalid query for pages")
+            )
+    })
+    test("400: Returns 400 for limit=invalid input", () => {
+        return request(app)
+            .get("/api/articles/1/comments?p=1&limit=a")
+            .expect(400)
+            .then((result) =>
+                expect(result.body.msg).toBe("Invalid query for limit")
+            )
+    })
+})
