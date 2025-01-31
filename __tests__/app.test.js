@@ -685,7 +685,7 @@ describe("GET /api/users/:username", () => {
     })
 })
 
-describe.only("PATCH /api/comments/:comment_id", () => {
+describe("PATCH /api/comments/:comment_id", () => {
     test("200: Responds with the updated comment (positive)", () => {
         return request(app)
             .patch("/api/comments/1")
